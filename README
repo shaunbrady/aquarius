@@ -1,0 +1,23 @@
+This is the README for Aquarius, a kernel in the works.  
+
+Aquarius is copyright Shaun Brady 2009, and released under the General Public License v2.
+Please see the COPYING file.
+
+REQUIREMENTS:
+* multiboot compliant bootloader
+* gcc and ld for building and linking
+* x86 processor (at least)
+
+INSTALLATION:
+$ make
+
+WARRANTY:
+By using this software or any part of it, the following will happen:
+1)It will not work.
+2)It will erase all of your data on the computer.
+3)It will erase data on other computers.
+4)The computer will explode.
+5)Your significant other will leave you.
+6)Your house will run away.
+7)Your dog will burn down.
+8)There is also a one in four chance the universe will implode.

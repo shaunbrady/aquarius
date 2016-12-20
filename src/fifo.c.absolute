@@ -1,0 +1,79 @@
+
+#include "fifo.h"
+
+uint32 fifo_init(fifo_t *f, uptr *buf, uint32 size){
+    f->buffer = f->start = f->end = buf;
+    f->size = size;
+    atomic_set(&f->available, 0); /* ATOMIC_INIT fails here... why? */
+    return 0;
+}
+/*typedef struct {
+    uptr *start;
+    uptr *end;
+    uptr *buffer;
+    atomic32_t available;
+    uint32 size;
+} fifo_t;*/
+
+uint32 fifo_pop(fifo_t *f, uptr *drop, uint32 size){
+    return 0;
+}
+
+uint32 fifo_pop_all(fifo_t *f, uptr *drop){
+    return 0;
+}
+
+uint32 fifo_push(fifo_t *f, uptr *pickup, uint32 size){
+    if(atomic_read(&f->available) == f->size){ /* We are full */
+        return 0;
+    }
+    uint32 bytes_copied;
+    if(f->start <= f->end){ /* "wrapping" mode */
+        /* Use up the back */
+        uint32 back_delta = f->buffer + f->size - f->end;
+        if (back_delta > 0){
+            if( size <= back_delta ){ /* We fit */
+                memcpy(pickup, &f->end, size);
+                f->end += size;
+                bytes_copied = size;
+                atomic_add(size, &f->available);
+                size = 0; /* All gone */
+            }
+            else{
+                memcpy(pickup, &f->end, back_delta);
+                f->end += back_delta;
+                bytes_copied = back_delta;
+                atomic_add(back_delta, &f->available);
+                size -= back_delta;
+            }
+        } 
+        if( size > 0){
+            uint32 front_delta = f->start - f->buffer;
+            if( size <= front_delta ) { /* We fit */
+                memcpy(pickup + back_delta, &f->end + back_delta, size);
+                f->end += size;
+                bytes_copied = size;
+                atomic_add(size, &f->available);
+                size = 0; /* All gone */
+            }
+            else{
+            }
+        }
+    }
+    else{ /* "contiguous" mode */
+        uint32 delta = f->start - f->end;
+        if( size <= delta ){ /* We fit */
+            memcpy(pickup, &f->end, size);
+            bytes_copied = size;
+            atomic_add(size, &f->available);
+            f->end += size;
+        }
+        else{ /* size to large, copy as much as possible */
+            memcpy(pickup, &f->end, delta);
+            bytes_copied = delta;
+            atomic_add(delta, &f->available);
+            f->end += delta;
+        }
+    }
+    return bytes_copied;
+}
